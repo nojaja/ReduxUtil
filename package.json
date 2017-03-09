@@ -1,0 +1,39 @@
+{
+  "name": "ReduxUtil",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/ReduxUtil.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0",
+    "babel-preset-es2015": "^6.18.0",
+    "browserify": "13.1.1",
+    "babelify": "^7.3.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.18.0"
+  },
+  "scripts": {
+    "start": "node build.js",
+    "babel": "babel src -d lib",
+    "build": "browserify src/index.babel.js -t babelify -o lib/htmlcompiler.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nojaja/ReduxUtil.git"
+  },
+  "keywords": [
+    "html",
+    "xml",
+    "rss",
+    "parser"
+  ],
+  "directories": {
+    "lib": "./lib"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nojaja/ReduxUtil/issues"
+  },
+  "homepage": "https://github.com/nojaja/ReduxUtil"
+}
