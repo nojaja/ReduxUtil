@@ -15,7 +15,7 @@
   "scripts": {
     "start": "node build.js",
     "babel": "babel src -d lib",
-    "build": "browserify src/index.babel.js -t babelify -o lib/htmlcompiler.js"
+    "build": "browserify src/index.babel.js -t babelify -o lib/ReduxUtil.js"
   },
   "repository": {
     "type": "git",
