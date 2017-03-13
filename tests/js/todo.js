@@ -82,12 +82,16 @@
         switch (action.type) {
           case 'ADD_TODO':
             var todo = new Todo('todo' + action.id, '#todo');
-            //this.child.push(todo); //←thisが指定されてcallしてるので参照出来ない、childはstateに持たせたくない
             todochild.push(todo);
             return state.concat([todo.reducer(undefined, action)]);
+          // toggleTodo
           case 'TOGGLE_TODO':
             return state.map(function (todoItem) {
-              return todo(todoItem, action);
+              return Todo.prototype.reducer(todoItem, action);
+            });
+          case 'SET_VISIBILITY_FILTER':
+            return state.map(function (todoItem) {
+              return Todo.prototype.reducer(todoItem, action);
             });
           default:
             return state;
@@ -106,10 +110,8 @@
           console.log(todochild[i]);
           var todo = todochild[i];
 
-          //html += todo.render(todo.$,state[i]);
           todo.render(todo.$, state[i], todo.prototype);
         }
-        //$this.html(html);
       }
     }]);
 
@@ -133,15 +135,35 @@
             return {
               id: action.id,
               text: action.text,
-              completed: false
+              completed: false,
+              filter: true
             };
+          // toggleTodo
           case 'TOGGLE_TODO':
-            if (action.id != todoItem.id) {
+            var targetid = "todo" + todoItem.id;
+            console.log(targetid);
+            console.log(action.id);
+            if (action.id != targetid) {
               return todoItem;
             }
             return Object.assign({}, todoItem, {
               completed: !todoItem.completed
             });
+          // filter
+          case 'SET_VISIBILITY_FILTER':
+            switch (action.filter) {
+              case 'SHOW_ALL':
+                return Object.assign({}, todoItem, {
+                  filter: true });
+              case 'SHOW_COMPLETED':
+                return Object.assign({}, todoItem, {
+                  filter: todoItem.completed });
+              case 'SHOW_ACTIVE':
+                return Object.assign({}, todoItem, {
+                  filter: !todoItem.completed });
+              default:
+                return todoItem;
+            }
           default:
             return todoItem;
         }
@@ -152,58 +174,65 @@
     }, {
       key: 'render',
       value: function render($this, state, prototype) {
-
         console.log($this, state);
-        /*
-        if($this.length < 1){//存在しない場合
-          var dom = prototype.clone();//雛形から複製
-          dom.attr('id','todo'+state.id);
-          dom.text(state.text);
-          dom.appendTo("#Todos2");
-          //prototype.after(dom);
-          $this=dom;
+        if (state.completed) {
+          $this.css('textDecoration', 'line-through');
+        } else {
+          $this.css('textDecoration', 'none');
         }
-        */
         $this.text(state.text).show();
-
-        //return `<li style="text-decoration: none;">${state.text}</li>`
+        if (!state.filter) {
+          $this.hide();
+        } else {
+          $this.show();
+        }
       }
     }]);
 
     return Todo;
   }(JQueryComponent);
 
-  var VisibilityFilter = function (_JQueryComponent3) {
-    _inherits(VisibilityFilter, _JQueryComponent3);
+  var VisibleFilter = function (_JQueryComponent3) {
+    _inherits(VisibleFilter, _JQueryComponent3);
 
-    function VisibilityFilter() {
-      _classCallCheck(this, VisibilityFilter);
+    function VisibleFilter() {
+      _classCallCheck(this, VisibleFilter);
 
-      return _possibleConstructorReturn(this, (VisibilityFilter.__proto__ || Object.getPrototypeOf(VisibilityFilter)).apply(this, arguments));
+      return _possibleConstructorReturn(this, (VisibleFilter.__proto__ || Object.getPrototypeOf(VisibleFilter)).apply(this, arguments));
     }
 
-    _createClass(VisibilityFilter, [{
+    _createClass(VisibleFilter, [{
       key: 'reducer',
       value: function reducer() {
-        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'SHOW_ALL';
+        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { filter: 'SHOW_ALL' };
         var action = arguments[1];
 
         switch (action.type) {
-          case 'SET_VISIBILITY_FILTER':
-            return action.filter;
+          case 'LINK':
+            return { filter: action.filter };
           default:
             return state;
         }
       }
     }, {
       key: 'preRender',
-      value: function preRender($this) {}
+      value: function preRender($this) {
+        $this.find("a").click(function () {
+          console.log($(this).attr("id"));
+          var filter = $(this).attr("id");
+          actionCreators.setFilter(filter);
+          actionCreators.mapStateToTodoListProps(filter);
+        });
+      }
     }, {
       key: 'render',
-      value: function render($this, state) {}
+      value: function render($this, state) {
+        $this.find("a").attr("href", "#");
+        $this.find("#" + state.filter).removeAttr("href");
+      }
     }]);
 
-    return VisibilityFilter;
+    return VisibleFilter;
   }(JQueryComponent);
 
   var AddTodo = function (_JQueryComponent4) {
@@ -239,20 +268,51 @@
     return AddTodo;
   }(JQueryComponent);
 
+  var ToggleTodo = function (_JQueryComponent5) {
+    _inherits(ToggleTodo, _JQueryComponent5);
+
+    function ToggleTodo() {
+      _classCallCheck(this, ToggleTodo);
+
+      return _possibleConstructorReturn(this, (ToggleTodo.__proto__ || Object.getPrototypeOf(ToggleTodo)).apply(this, arguments));
+    }
+
+    _createClass(ToggleTodo, [{
+      key: 'reducer',
+      value: function reducer() {
+        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { count: 0 };
+        var action = arguments[1];
+
+        return state;
+      }
+    }, {
+      key: 'preRender',
+      value: function preRender($this) {
+        $this.click(function () {
+          console.log($(this).attr("id"));
+          actionCreators.toggleTodo($(this).attr("id"));
+        });
+      }
+    }, {
+      key: 'render',
+      value: function render($this, state) {}
+    }]);
+
+    return ToggleTodo;
+  }(JQueryComponent);
+
   var todoMaxId = 1;
   var reduxUtil = new ReduxUtil();
-
   reduxUtil.addComponent(new AddTodo("AddTodo"));
+  // toggleTodo
+  reduxUtil.addComponent(new ToggleTodo("Todos li"));
+  // visible
+  reduxUtil.addComponent(new VisibleFilter("Filter"));
   reduxUtil.addComponent(new Todos("Todos"));
 
   reduxUtil.createStore();
   // Action:
   var actionCreators = { //action creators
-    increase: function increase() {
-      reduxUtil.dispatch({
-        type: 'increase'
-      });
-    },
     addTodo: function addTodo(text) {
       reduxUtil.dispatch({
         type: 'ADD_TODO',
@@ -260,6 +320,7 @@
         text: text
       });
     },
+    // toggleTodo
     toggleTodo: function toggleTodo(id) {
       reduxUtil.dispatch({
         type: 'TOGGLE_TODO',
@@ -271,23 +332,12 @@
         type: 'SET_VISIBILITY_FILTER',
         filter: filter
       });
-    }
-  };
-
-  var getVisibleTodos = function getVisibleTodos(todos, visibilityFilter) {
-    switch (visibilityFilter) {
-      case 'SHOW_ALL':
-        return todos;
-      case 'SHOW_COMPLETED':
-        return todos.filter(function (todo) {
-          return todo.completed;
-        });
-      case 'SHOW_ACTIVE':
-        return todos.filter(function (todo) {
-          return !todo.completed;
-        });
-      default:
-        return todos;
+    },
+    mapStateToTodoListProps: function mapStateToTodoListProps(filter) {
+      reduxUtil.dispatch({
+        type: 'LINK',
+        filter: filter
+      });
     }
   };
 });
