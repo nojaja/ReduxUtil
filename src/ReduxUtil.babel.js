@@ -29,8 +29,8 @@ export default class ReduxUtil {
     for (var key in this.subscribes) {
       this.components[key].setStore(this.store);
     }
-    //this.subscribe();
     this.store.subscribe(this.subscribe);
+    this.subscribe();
   }
   subscribe() {
     for (var key in ReduxUtil.instance.components) {

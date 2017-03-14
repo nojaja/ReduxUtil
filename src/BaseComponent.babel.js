@@ -9,10 +9,11 @@ ReduxUtil - BaseComponent
 ------------------------------------------------*/
 export default class BaseComponent {
   /**コンストラクタ**/
-  constructor() {
+  constructor(id) {
+    this.id = id; //部品のID
     this.store = {};
   }
-  reducer(state, action) { // Reducer:
+  reducer(state={}, action) { // Reducer:
     return state;
   }
   subscribe() {}
